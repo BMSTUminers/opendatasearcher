@@ -15,13 +15,13 @@
                            <th ng-repeat="header in result.headers">{{header}}</th>
                         </tr>
                        <tr ng-repeat="row in result.rows">
-                           <td ng-repeat="cell in row track by $index">{{cell}}</td>
+                           <td ng-repeat="cell in row track by $index" data-toggle="tooltip"  data-container="body" title="{{cell}}">{{ cell  | limitTo: 100 }}{{cell.length > 100 ? '...' : ''}}</td>
                        </tr>
                      </table>
                  </div>
                  <div ng-if="result.type === 'KML'">
                     <div post-render="{{result.kmlRef}}" id="map-canvas-{{result.index}}" style="width:100%; height:400px;">
-                    </div>
+                    </div>  
                  </div>
 
                  <div ng-if="result.type === 'raw'">
