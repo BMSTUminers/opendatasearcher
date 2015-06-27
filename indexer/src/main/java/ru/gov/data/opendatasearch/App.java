@@ -29,6 +29,7 @@ public class App {
 	        }
 	    });
 
+	    if (true) {
 	    try {
 			Indexer indexer = new Indexer("index/data");
 			indexer.createIndexWriter();
@@ -43,9 +44,9 @@ public class App {
 				String geo_filename = "";
 
 				String id = "";
-				int pos;
+				int pos;	
 				if ((pos = filename.lastIndexOf(".content.json")) != -1 ) {
-					id = filename.substring(0, pos);
+					id = System.getProperty("user.dir") + json_data_path + "/" + filename.substring(0, pos);
 					passport_filename = id + ".passport.json";
 					geo_filename = id + ".geo.json";
 				}
@@ -116,7 +117,8 @@ public class App {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		}}
+	    
 
 	    // SEARCH TEST
 		try {
@@ -124,7 +126,8 @@ public class App {
 			indexer = new Indexer("index/data");
 			List<Record> list;
 			// list = indexer.search("филиал", true);
-			list = indexer.search("адыгейск телефон мфц", true);
+			//list = indexer.search("адыгейск телефон мфц", true);
+			list = indexer.search("телефон", true);
 			// list = indexer.search("kizlar", true);
 			for (Record record : list) {
 				System.out.println(record.getJson());
