@@ -10,9 +10,9 @@
         /**
          * Initializes the map and calls the function that creates polylines.
          */
-        function initialize(src) {
+        function initialize(src, index) {
             if (! map) {
-               map = new google.maps.Map(document.getElementById('map-canvas'), {
+               map = new google.maps.Map(document.getElementById('map-canvas-' + index), {
                    center: new google.maps.LatLng(0.257753, 0.823688),
                    zoom: 2,
                    mapTypeId: google.maps.MapTypeId.TERRAIN

@@ -8,10 +8,10 @@ opendataControllers.controller('SearchListCtrl', ['$scope', 'Search',
   function($scope, Search) {
     
     $scope.search = function(query) {
-        $scope.result = Search.get({type: query}, function(result) {
-          if (result.type === 'KML') {
-            initialize(result.kmlRef);
-          }
+        $scope.results = Search.get({type: query}, function(results) {
+          for (var i = results.length - 1; i >= 0; i--) {
+            results[i].index = i;
+          };
         });
         $scope.show = true;
 
