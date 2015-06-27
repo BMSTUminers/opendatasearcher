@@ -4,21 +4,22 @@
         * an InfoWindow
         */
 
-        var map;
+        var map = []        ;
         //var src = window.location.origin + '/search/kml?query=kml';
 
         /**
          * Initializes the map and calls the function that creates polylines.
          */
-        function initialize(src, index) {
-            if (! map) {
-               map = new google.maps.Map(document.getElementById('map-canvas-' + index), {
+        function initialize(src, id, tempId) {
+            //if (! map[id])
+            {
+               map[id] = new google.maps.Map(document.getElementById(tempId), {
                    center: new google.maps.LatLng(0.257753, 0.823688),
                    zoom: 2,
                    mapTypeId: google.maps.MapTypeId.TERRAIN
                });
             }
-            loadKmlLayer(src, map);
+            loadKmlLayer(src, map[id]);
         }
 
         /**

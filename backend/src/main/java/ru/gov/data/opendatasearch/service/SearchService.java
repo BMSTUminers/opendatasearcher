@@ -34,9 +34,10 @@ public class SearchService {
 
     public List<SearchResult> query(String query) {
         List<SearchResult> results = new ArrayList<>();
-        results.add(dummyKML());
+        //results.add(dummyKML());
         results.add(dummyRaw(query));
         results.add(searchTable(query));
+        results.add(dummyKML());
         return results;
     }
 

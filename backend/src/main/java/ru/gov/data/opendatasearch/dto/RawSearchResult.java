@@ -13,7 +13,7 @@ public class RawSearchResult implements SearchResult {
     private List<Passport> docs = new ArrayList<>();
 
     public String getType() {
-        return "data";
+        return "raw";
     }
 
     public void addDoc(Passport element) {
