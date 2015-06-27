@@ -17,12 +17,15 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Service
 public class SearchService {
 
-    public Indexer indexer;
+    private Indexer indexer;
+    private Map<String, String> cash = new HashMap<>();
+    private AtomicInteger index = new AtomicInteger(0);
 
     public SearchService() {
         try {
@@ -34,14 +37,13 @@ public class SearchService {
 
     public List<SearchResult> query(String query) {
         List<SearchResult> results = new ArrayList<>();
-        //results.add(dummyKML());
-        results.add(dummyRaw(query));
-        results.add(searchTable(query));
-        results.add(dummyKML());
+        searchTable(query).forEach(results::add);
+        RawSearchResult raw = searchRaw(query);
+        if (raw.getDocs().size() > 0) results.add(raw);
         return results;
     }
 
-    public SearchResult dummyRaw(String query) {
+    public RawSearchResult searchRaw(String query) {
         Map<String, String> query2 = new HashMap<String, String>();
         query2.put("description",query);
 //			query2.put("description","Список отделений");
@@ -54,63 +56,98 @@ public class SearchService {
         return results;
     }
 
-    public SearchResult dummyKML() {
-        return new KMLSearchResult("http://104.154.47.78:8081/search/kml?query=kml");
-    }
 
-    public SearchResult searchTable(String query) {
+    public List<SearchResult> searchTable(String query) {
+        List<SearchResult> results = new ArrayList<>();
         try {
             List<Record> list;
             // list = indexer.search("филиал", true);
             list = indexer.search(query, true);
-            // list = indexer.search("kizlar", true);
-            Set<String> headers = new LinkedHashSet<>();
-            List<Map<String, String>> maps = list.stream()
-                    .map(record -> {
-                        Gson gson = new Gson();
-                        Type stringStringMap = new TypeToken<Map<String, String>>(){}.getType();
-                        Map<String,String> map =  gson.fromJson(record.getJson(), stringStringMap);
-                        return map;
-                    }).collect(Collectors.toList());
-            for (Map<String, String> map : maps) {
-                map.entrySet().forEach(en -> headers.add(en.getKey()));
+
+            List<Record> geRecords = list.stream().filter(rec ->
+                            !rec.getGeo().isEmpty() && !rec.getGeo().equals("{}")
+            ).collect(Collectors.toList());
+            if (geRecords.size() > 0) {
+                String kml = kml(geRecords);
+                String key = String.valueOf(index.incrementAndGet());
+                results.add(new KMLSearchResult("http://104.154.47.78:8081/search/kml?id=" + key));
+                cash.put(key, kml);
             }
 
-            List<String> hdrList =  headers.stream().collect(Collectors.toList());
-            TableSearchResult result = new TableSearchResult(hdrList);
-            for (Map<String, String> map : maps) {
-                List<String> row = new ArrayList<>(hdrList.size());
-                for (int i = 0; i<hdrList.size(); i++) {
-                    if (map.containsKey(hdrList.get(i))) {
-                        row.add(map.get(hdrList.get(i)));
-                    } else {
-                        row.add(    "---");
-                    }
+            Map<String, List<Record>> groups = new HashMap<>();
+            list.forEach(el -> {
+                String key = el.getId();
+                if (!groups.containsKey(key)) {
+                    groups.put(key, new ArrayList<>());
                 }
-                result.addRow(row);
-            }
-            return result;
+                groups.get(key).add(el);
+            });
+
+            groups.entrySet().forEach(recrodList -> {
+                Set<String> headers = new LinkedHashSet<>();
+                List<Map<String, String>> maps = recrodList.getValue().stream()
+                        .map(record -> {
+                            Gson gson = new Gson();
+                            Type stringStringMap = new TypeToken<Map<String, String>>() {
+                            }.getType();
+                            Map<String, String> map = gson.fromJson(record.getJson(), stringStringMap);
+                            return map;
+                        }).collect(Collectors.toList());
+                for (Map<String, String> map : maps) {
+                    map.entrySet().forEach(en -> headers.add(en.getKey()));
+                }
+
+                List<String> hdrList = headers.stream().collect(Collectors.toList());
+                TableSearchResult result = new TableSearchResult(hdrList);
+                for (Map<String, String> map : maps) {
+                    List<String> row = new ArrayList<>(hdrList.size());
+                    for (int i = 0; i < hdrList.size(); i++) {
+                        if (map.containsKey(hdrList.get(i))) {
+                            row.add(map.get(hdrList.get(i)));
+                        } else {
+                            row.add("---");
+                        }
+                    }
+                    result.addRow(row);
+                }
+                result.setTitle("Набор " + recrodList.getValue().get(0).getId());
+                results.add(result);
+            });
         } catch (Exception e) {
             e.printStackTrace();
-            return null;
         }
+        return results;
     }
 
-    public String kml(String query) {
-        Random r = new Random();
+    public String kml(List<Record> records) {
         Kml kml = new Kml();
         Document d = kml.createAndSetDocument();
 
-        for(int i = 0; i < 10; ++i) {
+        int i = 0;
+        Iterator<Record> it = records.iterator();
+        while (it.hasNext() && i < 100) {
+            i++;
+            Record record = it.next();
+            Gson gson = new Gson();
+            Type stringStringMap = new TypeToken<Map<String, String>>() {}.getType();
+            Map<String, String> map = gson.fromJson(record.getGeo(), stringStringMap);
+            double x = 0;
+            double y = 0;
+            y = Double.valueOf(map.get("Y").replace(',', '.'));
+            x = Double.valueOf(map.get("X").replace(',', '.'));
+
             d.createAndAddPlacemark()
-                    .withName("Test Placemark " + i)
-                    .withDescription("Around Red Square")
                     .createAndSetPoint()
-                    .addToCoordinates(37.62D + r.nextDouble() / 100.0D, 55.7542D + r.nextDouble() / 100.0D);
+                    .addToCoordinates(y, x);
         }
 
         StringWriter writer = new StringWriter();
         kml.marshal(writer);
+        System.out.println(writer.toString());
         return writer.toString();
+    }
+
+    public String kml(String id) {
+        return cash.get(id);
     }
 }
