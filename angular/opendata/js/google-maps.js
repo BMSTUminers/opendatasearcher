@@ -11,14 +11,14 @@
          * Initializes the map and calls the function that creates polylines.
          */
         function initialize(src, id, tempId) {
-            //if (! map[id])
-            {
-               map[id] = new google.maps.Map(document.getElementById(tempId), {
-                   center: new google.maps.LatLng(0.257753, 0.823688),
-                   zoom: 2,
-                   mapTypeId: google.maps.MapTypeId.TERRAIN
-               });
-            }
+            if (map[id]) {
+
+            }               
+            map[id] = new google.maps.Map(document.getElementById(tempId), {
+                center: new google.maps.LatLng(0.257753, 0.823688),
+                zoom: 2,
+                mapTypeId: google.maps.MapTypeId.TERRAIN
+            });
             loadKmlLayer(src, map[id]);
         }
 
@@ -38,6 +38,7 @@
                 var testimonial = document.getElementById('capture');
                 testimonial.innerHTML = content;
             });
-        }
+            map.setZoom(2)
+       }
 
 //         google.maps.event.addDomListener(window, 'load', initialize);

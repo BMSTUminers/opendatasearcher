@@ -16,8 +16,9 @@ import ru.gov.data.opendatasearch.dto.TableSearchResult;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.lang.reflect.Type;
+import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,7 +26,7 @@ public class SearchService {
 
     private Indexer indexer;
     private Map<String, String> cash = new HashMap<>();
-    private AtomicInteger index = new AtomicInteger(0);
+    private SecureRandom random = new SecureRandom();
 
     public SearchService() {
         try {
@@ -45,7 +46,7 @@ public class SearchService {
 
     public RawSearchResult searchRaw(String query) {
         Map<String, String> query2 = new HashMap<String, String>();
-        query2.put("description",query);
+        query2.put("description", query);
 //			query2.put("description","Список отделений");
         List<Passport> list2 = indexer.searchPassport(query2, true);
         RawSearchResult results = new RawSearchResult();
@@ -54,6 +55,17 @@ public class SearchService {
             results.addDoc(record);
         }
         return results;
+    }
+
+    public String url2Tile(String url) {
+        Map<String, String> query2 = new HashMap<String, String>();
+        query2.put("url",url);
+//			query2.put("description","Список отделений");
+        List<Passport> list2 = indexer.searchPassport(query2, true);
+        if (list2.size() > 0) {
+            return list2.get(0).getTitle();
+        }
+        return url;
     }
 
 
@@ -69,9 +81,10 @@ public class SearchService {
             ).collect(Collectors.toList());
             if (geRecords.size() > 0) {
                 String kml = kml(geRecords);
-                String key = String.valueOf(index.incrementAndGet());
+                String key = new BigInteger(130, random).toString(32);
                 results.add(new KMLSearchResult("http://104.154.47.78:8081/search/kml?id=" + key));
                 cash.put(key, kml);
+                System.out.println(key);
             }
 
             Map<String, List<Record>> groups = new HashMap<>();
@@ -110,7 +123,7 @@ public class SearchService {
                     }
                     result.addRow(row);
                 }
-                result.setTitle("Набор " + recrodList.getValue().get(0).getId());
+                result.setTitle("Набор " + url2Tile(recrodList.getValue().get(0).getId()));
                 results.add(result);
             });
         } catch (Exception e) {
@@ -125,7 +138,7 @@ public class SearchService {
 
         int i = 0;
         Iterator<Record> it = records.iterator();
-        while (it.hasNext() && i < 100) {
+        while (it.hasNext() && i < 200) {
             i++;
             Record record = it.next();
             Gson gson = new Gson();
@@ -133,12 +146,21 @@ public class SearchService {
             Map<String, String> map = gson.fromJson(record.getGeo(), stringStringMap);
             double x = 0;
             double y = 0;
-            y = Double.valueOf(map.get("Y").replace(',', '.'));
-            x = Double.valueOf(map.get("X").replace(',', '.'));
+            try {
+                y = Double.valueOf(map.get("Y").replace(',', '.'));
+                x = Double.valueOf(map.get("X").replace(',', '.'));
+                if (35 < x && x < 40 && 50 < y && y < 60) {
+                    double t = x;
+                    x = y;
+                    y = t;
+                }
 
-            d.createAndAddPlacemark()
-                    .createAndSetPoint()
-                    .addToCoordinates(y, x);
+                d.createAndAddPlacemark()
+                        .createAndSetPoint()
+                        .addToCoordinates(y, x);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         StringWriter writer = new StringWriter();
