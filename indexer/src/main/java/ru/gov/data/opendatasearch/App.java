@@ -1,21 +1,19 @@
 package ru.gov.data.opendatasearch;
 
+import com.google.gson.Gson;
+import ru.gov.data.opendatasearch.datasource.JSONPassport;
+import ru.gov.data.opendatasearch.datasource.Passport;
+import ru.gov.data.opendatasearch.datasource.Record;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import ru.gov.data.opendatasearch.datasource.JSONPassport;
-import ru.gov.data.opendatasearch.datasource.Passport;
-import ru.gov.data.opendatasearch.datasource.Record;
-
-import com.google.gson.Gson;
 
 public class App {
 	public static void main(String[] args) {
@@ -36,7 +34,8 @@ public class App {
 				final Gson gson = new Gson();
 				Object list[] = gson.fromJson(reader, Object[].class);
 				for (Object obj : list) {
-					Record record = new Record(obj.toString(), id);
+					String json = gson.toJson(obj);
+					Record record = new Record(json, id);
 					indexer.addRecord(record);
 				}
 			} catch (IOException e) {

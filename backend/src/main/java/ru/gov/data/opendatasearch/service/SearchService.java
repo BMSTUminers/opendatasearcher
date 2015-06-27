@@ -1,8 +1,12 @@
 package ru.gov.data.opendatasearch.service;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import de.micromata.opengis.kml.v_2_2_0.Document;
 import de.micromata.opengis.kml.v_2_2_0.Kml;
 import org.springframework.stereotype.Service;
+import ru.gov.data.opendatasearch.Indexer;
+import ru.gov.data.opendatasearch.datasource.Record;
 import ru.gov.data.opendatasearch.dto.KMLSearchResult;
 import ru.gov.data.opendatasearch.dto.RawSearchResult;
 import ru.gov.data.opendatasearch.dto.RawSearchResult.RawSearchElement;
@@ -10,9 +14,9 @@ import ru.gov.data.opendatasearch.dto.SearchResult;
 import ru.gov.data.opendatasearch.dto.TableSearchResult;
 
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.lang.reflect.Type;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class SearchService {
@@ -22,9 +26,9 @@ public class SearchService {
     public SearchResult query(String query) {
         if (query.equals("kml"))
             return dummyKML();
-        else if (query.equals("table"))
-            return dummyTable();
-        return dummyRaw();
+        else if (query.equals("raw"))
+            return dummyRaw();
+        return searchTable(query);
     }
 
     public SearchResult dummyRaw() {
@@ -45,23 +49,44 @@ public class SearchService {
         return new KMLSearchResult("http://104.154.47.78:8081/search/kml?query=kml");
     }
 
-    public SearchResult dummyTable() {
-        List<String> headers = new ArrayList<>();
-        headers.add("1");
-        headers.add("2");
-        headers.add("3");
-        headers.add("4");
-        TableSearchResult result = new TableSearchResult(headers);
-
-        for(int i = 0; i < 10; ++i) {
-            List<String> row = new ArrayList<>();
-            for(int j = 0; j < 4; ++j) {
-                row.add("cell" + i + "-" + j);
+    public SearchResult searchTable(String query) {
+        try {
+            Indexer indexer;
+            indexer = new Indexer("../indexer/index/data");
+            List<Record> list;
+            // list = indexer.search("филиал", true);
+            list = indexer.search(query, true);
+            // list = indexer.search("kizlar", true);
+            Set<String> headers = new LinkedHashSet<>();
+            List<Map<String, String>> maps = list.stream()
+                    .map(record -> {
+                        Gson gson = new Gson();
+                        Type stringStringMap = new TypeToken<Map<String, String>>(){}.getType();
+                        Map<String,String> map =  gson.fromJson(record.getJson(), stringStringMap);
+                        return map;
+                    }).collect(Collectors.toList());
+            for (Map<String, String> map : maps) {
+                map.entrySet().forEach(en -> headers.add(en.getKey()));
             }
-            result.addRow(row);
-        }
 
-        return result;
+            List<String> hdrList =  headers.stream().collect(Collectors.toList());
+            TableSearchResult result = new TableSearchResult(hdrList);
+            for (Map<String, String> map : maps) {
+                List<String> row = new ArrayList<>(hdrList.size());
+                for (int i = 0; i<hdrList.size(); i++) {
+                    if (map.containsKey(hdrList.get(i))) {
+                        row.add(map.get(hdrList.get(i)));
+                    } else {
+                        row.add(    "---");
+                    }
+                }
+                result.addRow(row);
+            }
+            return result;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public String kml(String query) {

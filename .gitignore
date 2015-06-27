@@ -32,3 +32,5 @@ overridedb.*
 *.jar
 .DS_Store
 .factorypath
+*.log
+backend/src/main/resources/static

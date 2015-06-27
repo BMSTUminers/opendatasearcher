@@ -36,14 +36,16 @@
                <div class="panel-heading">Будет названия</div>
 
                <!-- Table -->
-               <table class="table" ng-show="result.type === 'table'">
-                  <tr>
-                     <th ng-repeat="header in result.headers">{{header}}</th>
-                  </tr>
-                 <tr ng-repeat="row in result.rows">
-                     <td ng-repeat="cell in row">{{cell}}</td>
-                 </tr>
-               </table>
+               <div class="table-responsive" style="overflow: auto">
+                   <table class="table" ng-show="result.type === 'table'">
+                      <tr>
+                         <th ng-repeat="header in result.headers">{{header}}</th>
+                      </tr>
+                     <tr ng-repeat="row in result.rows">
+                         <td ng-repeat="cell in row">{{cell}}</td>
+                     </tr>
+                   </table>
+               </div>
                <div id="kml" ng-show="result.type === 'KML'">
                   <div id="map-canvas" style="width:100%; height:400px;"></div>
 
