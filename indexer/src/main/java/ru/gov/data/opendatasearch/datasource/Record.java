@@ -4,6 +4,8 @@ public class Record {
 	protected String json = "";
 	protected String id = "";
 	protected String geo = "";
+	protected String phone = "";
+	protected String email = "";
 
 	public Record(String json, String id) {
 		super();
@@ -38,5 +40,23 @@ public class Record {
 	public void setGeo(String geo) {
 		if (geo != null)
 			this.geo = geo;
+	}
+
+	public String getPhone() {
+		return phone;
+	}
+
+	public void setPhone(String phone) {
+		if (phone != null)
+			this.phone = phone;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		if (email != null)
+			this.email = email;
 	}
 }

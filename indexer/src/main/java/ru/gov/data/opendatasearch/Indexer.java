@@ -11,7 +11,6 @@ import java.util.Map.Entry;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.core.LowerCaseFilter;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -56,16 +55,17 @@ public class Indexer {
 		// persistant storage
 		index_storage = FSDirectory.open(new File(indexDir));
 
-		//analyzer = new StandardAnalyzer(luceneVersion);
-        analyzer = new Analyzer() {
-            @Override
-            protected TokenStreamComponents createComponents(String fieldName,
-                    Reader reader) {
-            	StandardTokenizer source = new StandardTokenizer(luceneVersion, reader);
-                TokenStream filter = new LowerCaseFilter(luceneVersion, source);
-                return new TokenStreamComponents(source, filter);
-            }
-        };
+		// analyzer = new StandardAnalyzer(luceneVersion);
+		analyzer = new Analyzer() {
+			@Override
+			protected TokenStreamComponents createComponents(String fieldName,
+					Reader reader) {
+				StandardTokenizer source = new StandardTokenizer(luceneVersion,
+						reader);
+				TokenStream filter = new LowerCaseFilter(luceneVersion, source);
+				return new TokenStreamComponents(source, filter);
+			}
+		};
 	}
 
 	/**
@@ -99,10 +99,13 @@ public class Indexer {
 	public void addPassport(Passport passport) throws IOException {
 		Document doc = new Document();
 		doc.add(new StoredField("url", passport.getUrl()));
-		doc.add(new Field("creator", passport.getCreator(), TextField.TYPE_STORED));
-		doc.add(new Field("subject", passport.getSubject(), TextField.TYPE_STORED));
+		doc.add(new Field("creator", passport.getCreator(),
+				TextField.TYPE_STORED));
+		doc.add(new Field("subject", passport.getSubject(),
+				TextField.TYPE_STORED));
 		doc.add(new Field("title", passport.getTitle(), TextField.TYPE_STORED));
-		doc.add(new Field("description", passport.getDescription(), TextField.TYPE_STORED));
+		doc.add(new Field("description", passport.getDescription(),
+				TextField.TYPE_STORED));
 
 		writer.addDocument(doc);
 	}
@@ -112,124 +115,126 @@ public class Indexer {
 		doc.add(new StoredField("id", record.getId()));
 		doc.add(new Field("json", record.getJson(), TextField.TYPE_STORED));
 		doc.add(new StoredField("geo", record.getGeo()));
+		doc.add(new StoredField("phone", record.getPhone()));
+		doc.add(new StoredField("email", record.getEmail()));
 		writer.addDocument(doc);
 	}
 
-    public List<Record> search(String query, boolean close_index_on_return) {
-        // see http://www.lucenetutorial.com/lucene-in-5-minutes.html
-        Query q;
-        List<Record> result = new ArrayList<Record>();
-        // QueryBuilder qbuilder = new QueryBuilder(analyzer);
-        // q = qbuilder.createMinShouldMatchQuery("contents", query, 0.9f);
-        try {
-            q = new QueryParser(luceneVersion, "json", analyzer)
-                    .parse(query.replaceAll("[/\'\"()]", " "));
+	public List<Record> search(String query, boolean close_index_on_return) {
+		// see http://www.lucenetutorial.com/lucene-in-5-minutes.html
+		Query q;
+		List<Record> result = new ArrayList<Record>();
+		// QueryBuilder qbuilder = new QueryBuilder(analyzer);
+		// q = qbuilder.createMinShouldMatchQuery("contents", query, 0.9f);
+		try {
+			q = new QueryParser(luceneVersion, "json", analyzer).parse(query
+					.replaceAll("[/\'\"()]", " "));
 
-            //query = query.toLowerCase();
-            IndexReader reader = null;
-            try {
-                if (searcher == null) {
-                    reader = DirectoryReader.open(index_storage);
-                    searcher = new IndexSearcher(reader);
-                }
+			// query = query.toLowerCase();
+			IndexReader reader = null;
+			try {
+				if (searcher == null) {
+					reader = DirectoryReader.open(index_storage);
+					searcher = new IndexSearcher(reader);
+				}
 
-                TopScoreDocCollector collector = TopScoreDocCollector.create(
-                        hitsPerPage, true);
+				TopScoreDocCollector collector = TopScoreDocCollector.create(
+						hitsPerPage, true);
 
-                searcher.search(q, collector);
-                ScoreDoc[] hits = collector.topDocs().scoreDocs;
-                // System.out.println("Found " + hits.length + " hits.");
+				searcher.search(q, collector);
+				ScoreDoc[] hits = collector.topDocs().scoreDocs;
+				// System.out.println("Found " + hits.length + " hits.");
 
-                for (int i = 0; i < hits.length; ++i) {
-                    int docId = hits[i].doc;
-                    Document d = searcher.doc(docId);
-                    Record record = new Record(d.get("json"), d.get("id"));
-                    record.setGeo(d.get("geo"));
+				for (int i = 0; i < hits.length; ++i) {
+					int docId = hits[i].doc;
+					Document d = searcher.doc(docId);
+					Record record = new Record(d.get("json"), d.get("id"));
+					record.setGeo(d.get("geo"));
+					record.setPhone(d.get("phone"));
+					record.setEmail(d.get("email"));
 
-                    result.add(record);
-                }
+					result.add(record);
+				}
 
-                if (close_index_on_return) {
-                    if (reader != null)
-                        reader.close();
-                    searcher = null;
-                }
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        } catch (org.apache.lucene.queryparser.classic.ParseException e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
-        }
-        return result;
-    }
+				if (close_index_on_return) {
+					if (reader != null)
+						reader.close();
+					searcher = null;
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} catch (org.apache.lucene.queryparser.classic.ParseException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		return result;
+	}
 
-    public List<Passport> searchPassport(Map<String, String> query,
-    		boolean close_index_on_return) {
-        // see http://www.lucenetutorial.com/lucene-in-5-minutes.html
-        Query q;
-        List<Passport> result = new ArrayList<Passport>();
+	public List<Passport> searchPassport(Map<String, String> query,
+			boolean close_index_on_return) {
+		// see http://www.lucenetutorial.com/lucene-in-5-minutes.html
+		Query q;
+		List<Passport> result = new ArrayList<Passport>();
 
-        try {
-//            q = new QueryParser(luceneVersion, "json", analyzer)
-//                    .parse(query.replaceAll("[/\'\"()]", " "));
-//        	q = new QueryParser(luceneVersion, "description", analyzer).parse("Список отделений");
+		try {
+			// q = new QueryParser(luceneVersion, "json", analyzer)
+			// .parse(query.replaceAll("[/\'\"()]", " "));
+			// q = new QueryParser(luceneVersion, "description",
+			// analyzer).parse("Список отделений");
 
-        	String[] fields = new String[query.size()];
-        	String[] values = new String[query.size()];
+			String[] fields = new String[query.size()];
+			String[] values = new String[query.size()];
 
-        	int i = 0;
-        	for(Entry<String, String> entry : query.entrySet()) {
-        		fields[i] = entry.getKey();
-        		values[i] = entry.getValue();
-        	    i++;
-        	}
+			int i = 0;
+			for (Entry<String, String> entry : query.entrySet()) {
+				fields[i] = entry.getKey();
+				values[i] = entry.getValue();
+				i++;
+			}
 
-			q = MultiFieldQueryParser.parse(luceneVersion,
-				 values, fields, analyzer);
+			q = MultiFieldQueryParser.parse(luceneVersion, values, fields,
+					analyzer);
 
-            //query = query.toLowerCase();
+			// query = query.toLowerCase();
 
-            IndexReader reader = null;
-            try {
-                if (searcher == null) {
-                    reader = DirectoryReader.open(index_storage);
-                    searcher = new IndexSearcher(reader);
-                }
+			IndexReader reader = null;
+			try {
+				if (searcher == null) {
+					reader = DirectoryReader.open(index_storage);
+					searcher = new IndexSearcher(reader);
+				}
 
-                TopScoreDocCollector collector = TopScoreDocCollector.create(
-                        hitsPerPage, true);
+				TopScoreDocCollector collector = TopScoreDocCollector.create(
+						hitsPerPage, true);
 
-                searcher.search(q, collector);
-                ScoreDoc[] hits = collector.topDocs().scoreDocs;
-                // System.out.println("Found " + hits.length + " hits.");
+				searcher.search(q, collector);
+				ScoreDoc[] hits = collector.topDocs().scoreDocs;
+				// System.out.println("Found " + hits.length + " hits.");
 
-                for (i = 0; i < hits.length; ++i) {
-                    int docId = hits[i].doc;
-                    Document d = searcher.doc(docId);
-                    Passport record = new Passport(
-                    		d.get("url"), 
-                    		d.get("creator"), 
-                    		d.get("subject"),
-                    		d.get("title"),
-                    		d.get("description"));
-                    result.add(record);
-                }
+				for (i = 0; i < hits.length; ++i) {
+					int docId = hits[i].doc;
+					Document d = searcher.doc(docId);
+					Passport record = new Passport(d.get("url"),
+							d.get("creator"), d.get("subject"), d.get("title"),
+							d.get("description"));
+					result.add(record);
+				}
 
-                if (close_index_on_return) {
-                    if (reader != null)
-                        reader.close();
-                    searcher = null;
-                }
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        } catch (org.apache.lucene.queryparser.classic.ParseException e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
-        }
-        return result;
-    }
+				if (close_index_on_return) {
+					if (reader != null)
+						reader.close();
+					searcher = null;
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} catch (org.apache.lucene.queryparser.classic.ParseException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		return result;
+	}
 }
