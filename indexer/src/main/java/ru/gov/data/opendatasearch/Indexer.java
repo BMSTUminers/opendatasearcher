@@ -98,7 +98,7 @@ public class Indexer {
 	 */
 	public void addPassport(Passport passport) throws IOException {
 		Document doc = new Document();
-		doc.add(new StoredField("url", passport.getUrl()));
+		doc.add(new Field("url", passport.getUrl(),TextField.TYPE_STORED));
 		doc.add(new Field("creator", passport.getCreator(),
 				TextField.TYPE_STORED));
 		doc.add(new Field("subject", passport.getSubject(),
