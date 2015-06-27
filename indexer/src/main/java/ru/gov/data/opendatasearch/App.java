@@ -49,10 +49,10 @@ public class App {
 				int pos;	
 				if ((pos = filename.lastIndexOf(".content.json")) != -1 ) {
 					id = filename.substring(0, pos);
-					passport_filename = id + ".passport.json";
-					geo_filename = id + ".geo.json";
-					phone_filename = id + ".phone.json";
-					email_filename = id + ".e-mail.json";
+					passport_filename = json_data_path + id + ".passport.json";
+					geo_filename = json_data_path + id + ".geo.json";
+					phone_filename = json_data_path + id + ".phone.json";
+					email_filename = json_data_path + id + ".e-mail.json";
 				}
 
 				Path path;
