@@ -7,6 +7,11 @@ public class KMLSearchResult implements SearchResult {
         return "KML";
     }
 
+    @Override
+    public String getTitle() {
+        return "Карта";
+    }
+
     public KMLSearchResult(String kmlRef) {
         this.kmlRef = kmlRef;
     }

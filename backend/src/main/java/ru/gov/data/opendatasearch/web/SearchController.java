@@ -26,8 +26,8 @@ public class SearchController {
 
     @RequestMapping(value = {"kml"}, produces = {"application/octet-stream"})
     @ResponseBody
-    public byte[] kml(@RequestParam String query) {
-        String kml = this.searchService.kml(query);
+    public byte[] kml(@RequestParam String id) {
+        String kml = this.searchService.kml(id);
         return kml.getBytes();
     }
 }

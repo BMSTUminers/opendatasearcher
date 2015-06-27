@@ -19,9 +19,9 @@ import com.google.gson.Gson;
 
 public class App {
 	public static void main(String[] args) {
-		final String json_data_path = "/data";
+		final String json_data_path = System.getProperty("user.dir") + "/data/";
 
-	    File dir = new File(System.getProperty("user.dir") + json_data_path);
+	    File dir = new File(json_data_path);
 	    File[] files = dir.listFiles(new FilenameFilter() {
 	        @Override
 	        public boolean accept(File dir, String name) {
@@ -29,6 +29,7 @@ public class App {
 	        }
 	    });
 
+	    if (true) {
 	    try {
 			Indexer indexer = new Indexer("index/data");
 			indexer.createIndexWriter();
@@ -41,32 +42,23 @@ public class App {
 				String filename = content_file.getName();
 				String passport_filename = "";
 				String geo_filename = "";
+				String phone_filename = "";
+				String email_filename = "";
 
 				String id = "";
-				int pos;
+				int pos;	
 				if ((pos = filename.lastIndexOf(".content.json")) != -1 ) {
 					id = filename.substring(0, pos);
-					passport_filename = id + ".passport.json";
-					geo_filename = id + ".geo.json";
+					passport_filename = json_data_path + id + ".passport.json";
+					geo_filename = json_data_path + id + ".geo.json";
+					phone_filename = json_data_path + id + ".phone.json";
+					email_filename = json_data_path + id + ".e-mail.json";
 				}
 
-				String[] geo_arr = new String[0];
 				Path path;
-
-				File geo_file = new File(geo_filename);
-				if (geo_file.exists()) {
-					path = geo_file.toPath();
-					try (BufferedReader reader = Files.newBufferedReader(path,
-							StandardCharsets.UTF_8)) {
-						final Gson gson = new Gson();
-						Object list[] = gson.fromJson(reader, Object[].class);
-						geo_arr = new String[list.length];
-						for (int i = 0; i < list.length; i++) {
-							String json = gson.toJson(list[i]);
-							geo_arr[i] = json;
-						}
-					}
-				}
+				String[] geo_arr = readJSONFile(geo_filename);
+				String[] phone_arr = readJSONFile(phone_filename);
+				String[] email_arr = readJSONFile(email_filename);
 
 				if (content_file.exists()) {
 					path = content_file.toPath();
@@ -78,12 +70,20 @@ public class App {
 						Object list[] = gson.fromJson(reader, Object[].class);
 						if (list == null)
 							continue;
+
 						boolean add_geo = (list.length == geo_arr.length);
+						boolean add_phone = (list.length == phone_arr.length);
+						boolean add_email = (list.length == email_arr.length);
+
 						for (int i = 0; i < list.length; i++) {
 							String json = gson.toJson(list[i]);
 							Record record = new Record(json, id);
 							if (add_geo)
 								record.setGeo(geo_arr[i]);
+							if (add_phone)
+								record.setPhone(phone_arr[i]);
+							if (add_email)
+								record.setEmail(email_arr[i]);
 							indexer.addRecord(record);
 						}
 					} catch (IOException e) {
@@ -116,7 +116,8 @@ public class App {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		}}
+	    
 
 	    // SEARCH TEST
 		try {
@@ -124,10 +125,11 @@ public class App {
 			indexer = new Indexer("index/data");
 			List<Record> list;
 			// list = indexer.search("филиал", true);
-			list = indexer.search("адыгейск телефон мфц", true);
+			//list = indexer.search("адыгейск телефон мфц", true);
+			list = indexer.search("телефон", true);
 			// list = indexer.search("kizlar", true);
 			for (Record record : list) {
-				System.out.println(record.getJson());
+				System.out.println(record.getId() + "\t" + record.getJson());
 			}
 
 			System.out.println("---------------------------------------");
@@ -143,5 +145,28 @@ public class App {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	public static String[] readJSONFile(String filename) {
+		String[] result = new String[0];
+		
+		File file = new File(filename);
+		if (file.exists()) {
+			Path path = file.toPath();
+			try (BufferedReader reader = Files.newBufferedReader(path,
+					StandardCharsets.UTF_8)) {
+				final Gson gson = new Gson();
+				Object list[] = gson.fromJson(reader, Object[].class);
+				result = new String[list.length];
+				for (int i = 0; i < list.length; i++) {
+					String json = gson.toJson(list[i]);
+					result[i] = json;
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return result;
 	}
 }

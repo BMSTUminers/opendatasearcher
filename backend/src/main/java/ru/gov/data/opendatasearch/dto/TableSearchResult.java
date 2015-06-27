@@ -5,8 +5,9 @@ import java.util.List;
 
 public class TableSearchResult implements SearchResult {
     private final List<String> headers;
-    private final List<List<String>> rows = new ArrayList();
+    private final List<List<String>> rows = new ArrayList<>();
     private final int numFields;
+    private String title;
 
     public TableSearchResult(List<String> headers) {
         this.headers = headers;
@@ -35,5 +36,14 @@ public class TableSearchResult implements SearchResult {
 
     public String getType() {
         return "table";
+    }
+
+    @Override
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 }
