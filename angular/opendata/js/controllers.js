@@ -16,10 +16,6 @@ opendataControllers.controller('SearchListCtrl', ['$scope', '$location', 'Search
         
     };
 
-    $scope.changeUrl = function(query) {
-      $location.search('q', query);
-    };
-
     $scope.initialize = function(element, attrs) {
             initialize(attrs.postRender, attrs.id, element[0].id);
         };
@@ -46,7 +42,21 @@ opendataControllers.directive('postRender', [ '$timeout', function($timeout) {
 
 
 
-opendataControllers.controller('SearchHitCtrl', ['$scope', 'Search',
-  function($scope, Search) {
+opendataControllers.controller('SearchHitCtrl', ['$scope', '$location', 'Search',
+  function($scope, $location, Search) {
+        $scope.changeUrl = function(query) {
+      $location.path('search');
+      $location.search('q', query);
+      
+    };
+
+  }]);
+
+opendataControllers.controller('SomeHitCtrl', ['$scope', 'Search',
+  function($scope, $location, Search) {
+        $scope.changeUrl = function(query) {
+      $location.search('q', query);
+      
+    };
 
   }]);
