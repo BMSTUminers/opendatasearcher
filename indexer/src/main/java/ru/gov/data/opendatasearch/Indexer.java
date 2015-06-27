@@ -127,7 +127,9 @@ public class Indexer {
 		// QueryBuilder qbuilder = new QueryBuilder(analyzer);
 		// q = qbuilder.createMinShouldMatchQuery("contents", query, 0.9f);
 		try {
-			q = new QueryParser(luceneVersion, "json", analyzer).parse(query
+			QueryParser qp = new QueryParser(luceneVersion, "json", analyzer);
+			qp.setDefaultOperator(QueryParser.Operator.AND);
+			q = qp.parse(query
 					.replaceAll("[/\'\"()]", " "));
 
 			// query = query.toLowerCase();
