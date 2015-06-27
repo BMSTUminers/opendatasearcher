@@ -41,6 +41,7 @@ public class Indexer {
 	protected Directory index_storage;
 	protected IndexSearcher searcher = null;
 	protected IndexWriter writer = null;
+	protected final int hitsPerPage = 1000;
 
 	/**
 	 * Path to Lucene's index
@@ -125,8 +126,6 @@ public class Indexer {
                     .parse(query.replaceAll("[/\'\"()]", " "));
 
             //query = query.toLowerCase();
-
-            int hitsPerPage = 25;
             IndexReader reader = null;
             try {
                 if (searcher == null) {
@@ -192,7 +191,6 @@ public class Indexer {
 
             //query = query.toLowerCase();
 
-            int hitsPerPage = 25;
             IndexReader reader = null;
             try {
                 if (searcher == null) {
