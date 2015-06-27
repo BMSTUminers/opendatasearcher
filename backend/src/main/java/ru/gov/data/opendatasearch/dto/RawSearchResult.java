@@ -16,6 +16,11 @@ public class RawSearchResult implements SearchResult {
         return "raw";
     }
 
+    @Override
+    public String getTitle() {
+        return "Наборы данных";
+    }
+
     public void addDoc(Passport element) {
         this.docs.add(element);
     }
