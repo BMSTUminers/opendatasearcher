@@ -45,10 +45,14 @@ opendataControllers.directive('postRender', [ '$timeout', function($timeout) {
 opendataControllers.controller('SearchHitCtrl', ['$scope', '$location', 'Search',
   function($scope, $location, Search) {
         $scope.changeUrl = function(query) {
-      $location.path('search');
-      $location.search('q', query);
+          $location.path('search');
+          $location.search('q', query);
       
-    };
+        };
+
+        $scope.$on('$locationChangeSuccess', function(next, current){
+            $scope.searchQuery = $location.search().q;
+        });
 
   }]);
 
