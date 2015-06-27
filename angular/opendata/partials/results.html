@@ -25,9 +25,9 @@
                  </div>
 
                  <div ng-if="result.type === 'raw'">
-                     <div ng-repeat="doc in result.docs">
-                         <a href="http://data.gov.ru/opendata/{{doc.url}}">{{doc.title}}</a>
-                         <div>{{doc.description}}</div>
+                     <div class="raw-result" ng-repeat="doc in result.docs">
+                         <h4><a href="http://data.gov.ru/opendata/{{doc.url}}">{{doc.title}}</a></h4>
+                         <p>{{doc.description}}</p>
                      </div>
                  </div>
 

@@ -9,3 +9,9 @@ body {
 #results {
    margin-top: 30px;
 }
+
+.raw-result {
+   padding-left: 15px;
+   padding-right: 15px;
+   padding-top: 10px;
+}
