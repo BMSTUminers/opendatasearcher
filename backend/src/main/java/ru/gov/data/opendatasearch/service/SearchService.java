@@ -6,13 +6,14 @@ import de.micromata.opengis.kml.v_2_2_0.Document;
 import de.micromata.opengis.kml.v_2_2_0.Kml;
 import org.springframework.stereotype.Service;
 import ru.gov.data.opendatasearch.Indexer;
+import ru.gov.data.opendatasearch.datasource.Passport;
 import ru.gov.data.opendatasearch.datasource.Record;
 import ru.gov.data.opendatasearch.dto.KMLSearchResult;
 import ru.gov.data.opendatasearch.dto.RawSearchResult;
-import ru.gov.data.opendatasearch.dto.RawSearchResult.RawSearchElement;
 import ru.gov.data.opendatasearch.dto.SearchResult;
 import ru.gov.data.opendatasearch.dto.TableSearchResult;
 
+import java.io.IOException;
 import java.io.StringWriter;
 import java.lang.reflect.Type;
 import java.util.*;
@@ -20,29 +21,36 @@ import java.util.stream.Collectors;
 
 @Service
 public class SearchService {
+
+    public Indexer indexer;
+
     public SearchService() {
-    }
-
-    public SearchResult query(String query) {
-        if (query.equals("kml"))
-            return dummyKML();
-        else if (query.equals("raw"))
-            return dummyRaw();
-        return searchTable(query);
-    }
-
-    public SearchResult dummyRaw() {
-        RawSearchResult result = new RawSearchResult();
-
-        for(int i = 0; i < 10; ++i) {
-            RawSearchElement element = new RawSearchElement();
-            element.setTitle("Search Result " + i);
-            element.setUri("http://google.com");
-            element.setText("Sample text " + i);
-            result.addDoc(element);
+        try {
+            indexer = new Indexer("../indexer/index/data");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+    }
 
-        return result;
+    public List<SearchResult> query(String query) {
+        List<SearchResult> results = new ArrayList<>();
+        results.add(dummyKML());
+        results.add(dummyRaw(query));
+        results.add(searchTable(query));
+        return results;
+    }
+
+    public SearchResult dummyRaw(String query) {
+        Map<String, String> query2 = new HashMap<String, String>();
+        query2.put("description",query);
+//			query2.put("description","Список отделений");
+        List<Passport> list2 = indexer.searchPassport(query2, true);
+        RawSearchResult results = new RawSearchResult();
+        for (Passport record : list2) {
+            System.out.println(record.getTitle());
+            results.addDoc(record);
+        }
+        return results;
     }
 
     public SearchResult dummyKML() {
@@ -51,8 +59,6 @@ public class SearchService {
 
     public SearchResult searchTable(String query) {
         try {
-            Indexer indexer;
-            indexer = new Indexer("../indexer/index/data");
             List<Record> list;
             // list = indexer.search("филиал", true);
             list = indexer.search(query, true);
