@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.gov.data.opendatasearch.dto.SearchResult;
 import ru.gov.data.opendatasearch.service.SearchService;
 
+import java.util.List;
+
 @RestController
 @RequestMapping({"/search"})
 public class SearchController {
@@ -18,7 +20,7 @@ public class SearchController {
     }
 
     @RequestMapping({"query"})
-    public SearchResult query(@RequestParam String query) {
+    public List<SearchResult> query(@RequestParam String query) {
         return this.searchService.query(query);
     }
 
