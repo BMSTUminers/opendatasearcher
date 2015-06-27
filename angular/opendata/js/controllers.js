@@ -52,11 +52,7 @@ opendataControllers.controller('SearchHitCtrl', ['$scope', '$location', 'Search'
 
   }]);
 
-opendataControllers.controller('SomeHitCtrl', ['$scope', 'Search',
-  function($scope, $location, Search) {
-        $scope.changeUrl = function(query) {
-      $location.search('q', query);
-      
-    };
-
+opendataControllers.controller('SomeHitCtrl', ['$scope',
+  function($scope) {
+        
   }]);
