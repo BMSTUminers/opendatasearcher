@@ -3,7 +3,10 @@
              <div class="result" ng-repeat="result in results">
                <div class="panel panel-default" >
                  <!-- Default panel contents -->
-                 <div class="panel-heading">Будет названия</div>
+                 <div class="panel-heading">
+                  <h3 class="panel-title">{{result.title}}</h3>
+                   
+                 </div>
 
                  <!-- Table -->
                  <div class="table-responsive" style="overflow: auto" ng-if="result.type === 'table'">
