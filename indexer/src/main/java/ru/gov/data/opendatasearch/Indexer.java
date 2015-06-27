@@ -110,6 +110,7 @@ public class Indexer {
 		Document doc = new Document();
 		doc.add(new StoredField("id", record.getId()));
 		doc.add(new Field("json", record.getJson(), TextField.TYPE_STORED));
+		doc.add(new StoredField("geo", record.getGeo()));
 		writer.addDocument(doc);
 	}
 
@@ -144,6 +145,7 @@ public class Indexer {
                     int docId = hits[i].doc;
                     Document d = searcher.doc(docId);
                     Record record = new Record(d.get("json"), d.get("id"));
+                    record.setGeo(d.get("geo"));
 
                     result.add(record);
                 }
