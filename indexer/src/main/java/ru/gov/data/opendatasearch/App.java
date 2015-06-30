@@ -18,8 +18,17 @@ import ru.gov.data.opendatasearch.datasource.Record;
 import com.google.gson.Gson;
 
 public class App {
-    public static void main(String[] args) {
-        final String json_data_path = System.getProperty("user.dir") + "/data/";
+    private static final String jsonDataPath = System.getProperty("user.dir")
+            + "/data/";
+    private static final String indexDir = "index/data";
+
+    public void parseAndIndex(String json_data_path, String indexDir) {
+        // file names convention:
+        //      DATASET_ID.content.json
+        //      DATASET_ID.passport.json
+        //      DATASET_ID.geo.json
+        //      DATASET_ID.phone.json
+        //      DATASET_ID.e-mail.json
 
         File dir = new File(json_data_path);
         File[] files = dir.listFiles(new FilenameFilter() {
@@ -29,18 +38,11 @@ public class App {
             }
         });
 
-        // /* Uncomment it to switch off indexing
         try {
-            Indexer indexer = new Indexer("index/data");
+            Indexer indexer = new Indexer(indexDir);
             indexer.createIndexWriter();
 
             for (File content_file : files) {
-                // final String filename =
-                // "7710349494-mfclist.content.json";
-                // final String passport_filename =
-                // "7710349494-mfclist.passport.json";
-                // final String id = "7710349494-mfclist";
-
                 String filename = content_file.getName();
                 String passport_filename = "";
                 String geo_filename = "";
@@ -118,17 +120,20 @@ public class App {
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-        } // */
+        }
+    }
 
+    public void searchTest(String indexDir, String query) {
         // SEARCH TEST
         try {
             Indexer indexer;
-            indexer = new Indexer("index/data");
+            indexer = new Indexer(indexDir);
             List<Record> list;
-            // list = indexer.search("филиал", true);
-            // list = indexer.search("адыгейск телефон мфц", true);
-            list = indexer.search("телефон", true);
-            // list = indexer.search("kizlar", true);
+            if (query != null && !query.isEmpty()) {
+                list = indexer.search(query, true);
+            } else {
+                list = indexer.search("телефон", true);
+            }
             for (Record record : list) {
                 System.out.println(record.getId() + "\t" + record.getJson());
             }
@@ -136,8 +141,12 @@ public class App {
             System.out.println("---------------------------------------");
 
             Map<String, String> query2 = new HashMap<String, String>();
-            query2.put("title", "МФЦ");
-            // query2.put("description","Список отделений");
+            if (query != null && !query.isEmpty()) {
+                query2.put("description", query);
+            } else {
+                query2.put("title", "МФЦ");
+                // query2.put("description","Список отделений");
+            }
             List<Passport> list2 = indexer.searchPassport(query2, true);
             for (Passport record : list2) {
                 System.out.println(record.getTitle());
@@ -169,5 +178,12 @@ public class App {
             }
         }
         return result;
+    }
+
+    public static void main(String[] args) {
+        App app = new App();
+        app.parseAndIndex(jsonDataPath, indexDir);
+        app.searchTest(indexDir, null);
+        // app.searchTest(indexDir, "мфц мытищи");
     }
 }
