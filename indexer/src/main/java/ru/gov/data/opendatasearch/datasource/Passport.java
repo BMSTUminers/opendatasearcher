@@ -10,16 +10,11 @@ public class Passport {
     public Passport(String url, String creator, String subject, String title,
             String description) {
         super();
-        if (url != null)
-            this.url = url;
-        if (creator != null)
-            this.creator = creator;
-        if (subject != null)
-            this.subject = subject;
-        if (title != null)
-            this.title = title;
-        if (description != null)
-            this.description = description;
+        this.url = replaceNull(url);
+        this.creator = replaceNull(creator);
+        this.subject = replaceNull(subject);
+        this.title = replaceNull(title);
+        this.description = replaceNull(description);
     }
 
     public String getUrl() {
@@ -27,8 +22,7 @@ public class Passport {
     }
 
     public void setUrl(String url) {
-        if (url != null)
-            this.url = url;
+        this.url = replaceNull(url);
     }
 
     public String getCreator() {
@@ -36,8 +30,7 @@ public class Passport {
     }
 
     public void setCreator(String creator) {
-        if (creator != null)
-            this.creator = creator;
+        this.creator = replaceNull(creator);
     }
 
     public String getSubject() {
@@ -45,8 +38,7 @@ public class Passport {
     }
 
     public void setSubject(String subject) {
-        if (subject != null)
-            this.subject = subject;
+        this.subject = replaceNull(subject);
     }
 
     public String getTitle() {
@@ -54,8 +46,7 @@ public class Passport {
     }
 
     public void setTitle(String title) {
-        if (title != null)
-            this.title = title;
+        this.title = replaceNull(title);
     }
 
     public String getDescription() {
@@ -63,7 +54,10 @@ public class Passport {
     }
 
     public void setDescription(String description) {
-        if (description != null)
-            this.description = description;
+        this.description = replaceNull(description);
+    }
+
+    public static String replaceNull(String str) {
+        return str == null ? "" : str;
     }
 }

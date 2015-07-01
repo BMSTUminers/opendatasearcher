@@ -9,10 +9,8 @@ public class Record {
 
     public Record(String json, String id) {
         super();
-        if (json != null)
-            this.json = json;
-        if (id != null)
-            this.id = id;
+        this.json = replaceNull(json);
+        this.id = replaceNull(id);
     }
 
     public String getJson() {
@@ -20,8 +18,7 @@ public class Record {
     }
 
     public void setJson(String json) {
-        if (json != null)
-            this.json = json;
+        this.json = replaceNull(json);
     }
 
     public String getId() {
@@ -29,8 +26,7 @@ public class Record {
     }
 
     public void setId(String id) {
-        if (id != null)
-            this.id = id;
+        this.id = replaceNull(id);
     }
 
     public String getGeo() {
@@ -38,8 +34,7 @@ public class Record {
     }
 
     public void setGeo(String geo) {
-        if (geo != null)
-            this.geo = geo;
+        this.geo = replaceNull(geo);
     }
 
     public String getPhone() {
@@ -47,8 +42,7 @@ public class Record {
     }
 
     public void setPhone(String phone) {
-        if (phone != null)
-            this.phone = phone;
+        this.phone = replaceNull(phone);
     }
 
     public String getEmail() {
@@ -56,7 +50,10 @@ public class Record {
     }
 
     public void setEmail(String email) {
-        if (email != null)
-            this.email = email;
+        this.email = replaceNull(email);
+    }
+
+    public static String replaceNull(String str) {
+        return str == null ? "" : str;
     }
 }
