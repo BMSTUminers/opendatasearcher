@@ -8,5 +8,5 @@ This project is a competitive web application that made for Data.gov.ru Hackatho
 
 How to build:
 ```bash
-mnv clean install
+mvn clean install
 ```
